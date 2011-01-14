@@ -1,0 +1,9 @@
+A Drupal module with some node addons. Theses include the following:
+
+Referenced User Node permission
+-------------------------------
+Allow's user referenced in nodes via the CCK User reference field to have the same permission over the node as the node creator
+
+Quick Links
+-----------
+Allow admin links on nodes for easy access
