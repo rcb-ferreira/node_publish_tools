@@ -7,3 +7,5 @@ Allow's user referenced in nodes via the CCK User reference field to have the sa
 Quick Links
 -----------
 Allow admin links on nodes for easy access
+
+This module is still very much in development, so use with caution.
