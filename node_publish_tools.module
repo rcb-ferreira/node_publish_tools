@@ -21,3 +21,78 @@ function node_publish_tools_help($path, $args) {
 function node_publish_tools_perm(){
 	return array('allow referenced access', 'see node publish links', 'administer access to node publish tool');
 }
+
+/**
+ * Implementation of hook_theme().
+ */
+function node_publish_tools_theme($cache, $type, $theme, $path) {
+  $path = drupal_get_path('module', 'node_publish_tools');
+  $items['node_publish_tools'] = array(
+    'arguments' => array('links' => array()),
+    'template' => 'admin-links',
+    'path' => $path,
+    'file' => 'theme.inc',
+  );
+  return $items;
+}
+
+/**
+ * Retrieve the admin links for a given object.
+ */
+function node_publish_tools_get_links($type, $object) {
+  $links = array();
+  if (user_access('node publish tools admin links')) {
+    $links = module_invoke_all('admin_link', $type, $object);
+    drupal_alter('admin_link', $links, $type, $object);
+  }
+  return $links;
+}
+
+/**
+ * Implementation of hook_admin_link() on behalf of the node module.
+ */
+function node_admin_link($type, $object) {
+  $links = array();
+  if ($type == 'node') {
+    if (!function_exists('node_preview')) {
+      if (node_access('update', $object)) {
+        $links['node-edit'] = array(
+          'title' => t('Edit'),
+          'href' => "node/{$object->nid}/edit",
+          'attributes' => array('class' => 'icon-edit'),
+          'query' => array('destination' => $_GET['q']),
+        );
+      }
+      if (node_access('delete', $object)) {
+        $links['node-delete'] = array(
+          'title' => t('Delete'),
+          'href' => "node/{$object->nid}/delete",
+          'attributes' => array('class' => 'icon-delete'),
+          'query' => array('destination' => $_GET['q']),
+        );
+      }
+    }
+  }
+  return $links;
+}
+
+/**
+ * Implementation of hook_theme_registry_alter().
+ */
+function node_publish_tools_theme_registry_alter(&$theme_registry) {
+  $hooks = array(
+      'node',
+  );
+  foreach ($hooks as $hook) {
+    if (empty($theme_registry[$hook]['preprocess functions']) || !in_array('node_publish_tools_preprocess_'. $hook, $theme_registry[$hook]['preprocess functions'])) {
+      $theme_registry[$hook]['preprocess functions'][] = 'node_publish_tools_preprocess_'. $hook;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_preprocess_node().
+ */
+function node_publish_tools_preprocess_node(&$vars) {
+  $vars['content'] .= theme('node_publish_tools', node_publish_tools_get_links('node', $vars['node']));
+}
