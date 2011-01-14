@@ -1,0 +1,23 @@
+<?php
+// $Id$
+/**
+ * @file
+ * 	Ads some node addons like the ability for referenced user to have same permission over nodes as creators
+ */
+
+/**
+ * Implementation of hook_help()
+ */
+function node_publish_tools_help($path, $args) {
+  if ($path == 'admin/help#node-publish-tools') {
+    $output = '<p>Ads some node addons like the ability for referenced user to have same permission over nodes as creators</p>';
+    return $output;
+  }
+}
+
+/**
+ * Implementation of hook_perm()
+ */
+function node_publish_tools_perm(){
+	return array('allow referenced access', 'see node publish links', 'administer access to node publish tool');
+}
