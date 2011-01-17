@@ -37,13 +37,53 @@ function node_publish_tools_theme($cache, $type, $theme, $path) {
 }
 
 /**
+ * Implementation of hook_menu()
+ */
+function node_publish_tools_menu() {
+  $items['admin/settings/profilewizard'] = array(
+    'title' => 'Node Publish Tools',
+    'description' => 'Configure the node publish tools.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_publish_tools_settings_form'),
+    'access arguments' => array('administer profile wizard'),
+    'file' => 'profilewizard.admin.inc',
+  );
+  $items['node/%/node_publish_tools/%'] = array(
+    'title' => 'Node Publish Tools',
+    'page callback' => 'node_publish_tools_wizard',
+    'page arguments' => array(1,3),
+    'access callback' => '_publish_tools_access',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Function to calculate access to menu
+ *
+ * @return boolean
+ *  True if valid
+ */
+function _node_publish_tools_access($nid) {
+  global $user;
+  $node = node_load($nid);
+  return $user && $user->uid &&
+  (
+    // The user is not blocked and logged in at least once.
+    ($user->access && $user->status && ((user_access('allow referenced access') && $node->uid == $user->uid) || user_access('administer access to node publish tool')))
+  );
+}
+
+/**
  * Retrieve the admin links for a given object.
  */
 function node_publish_tools_get_links($type, $object) {
   $links = array();
+	
   if (user_access('administer access to node publish tool')) {
     $links = module_invoke_all('admin_link', $type, $object);
-    drupal_alter('admin_link', $links, $type, $object);
+    drupal_alter('admin_link', $links, $type, $object);		
   }
   return $links;
 }
@@ -51,13 +91,14 @@ function node_publish_tools_get_links($type, $object) {
 /**
  * Implementation of hook_admin_link() on behalf of the node module.
  */
-function node_admin_link($type, $object) {
+function node_admin_link($type, $object ) {
 	   $links = array();
   if ($type == 'node') {
     if (!function_exists('node_preview')) {
-    // print_r($object->field_user); //To see vars
+			/*// print_r($object->field_user); //To see vars
       // Check if node is referenced by logged in user
       $referenced = false;
+			
       foreach($object->field_user as $reference) {
         global $user;
         if ($user->uid == $reference['uid'])
@@ -68,9 +109,9 @@ function node_admin_link($type, $object) {
       if ($referenced == true) {
         // set the node permissions to allow editing by this user...
         print_r("You are allowed to edit this node");
-      }
+      }*/
 
-      if ((node_access('update', $object)) || $referenced == true) { //modified this
+      if (node_access('update', $object)) { //modified this
         $links['node-edit'] = array(
           'title' => t('Edit'),
           'href' => "node/{$object->nid}/edit",
@@ -79,14 +120,15 @@ function node_admin_link($type, $object) {
         );
       }
       if (node_access('delete', $object)) {
+      // if ((node_access('delete', $object)) || $referenced == true) {
         $links['node-delete'] = array(
           'title' => t('Delete'),
           'href' => "node/{$object->nid}/delete",
           'attributes' => array('class' => 'icon-delete'),
           'query' => array('destination' => $_GET['q']),
         );
-      }
-    }
+			}
+		}	
   }
   return $links;
 }
