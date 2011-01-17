@@ -37,28 +37,11 @@ function node_publish_tools_theme($cache, $type, $theme, $path) {
 }
 
 /**
- * Function to calculate access to menu
- *
- * @return boolean
- *  True if valid
- */
-function _node_publish_tools_access($nid) {
-  global $user;
-  $node = node_load($nid);
-  return $user && $user->uid &&
-  (
-    // The user is not blocked and logged in at least once.
-    ($user->access && $user->status && ((user_access('allow referenced access') && $node->uid == $user->uid) || user_access('administer access to node publish tool')))
-  );
-	return TRUE;
-}
-
-/**
  * Retrieve the admin links for a given object.
  */
 function node_publish_tools_get_links($type, $object) {
   $links = array();
-  if (user_access('node publish tools admin links')) {
+  if (user_access('administer access to node publish tool')) {
     $links = module_invoke_all('admin_link', $type, $object);
     drupal_alter('admin_link', $links, $type, $object);
   }
@@ -69,10 +52,25 @@ function node_publish_tools_get_links($type, $object) {
  * Implementation of hook_admin_link() on behalf of the node module.
  */
 function node_admin_link($type, $object) {
-  $links = array();
+	   $links = array();
   if ($type == 'node') {
     if (!function_exists('node_preview')) {
-      if (node_access('update', $object)) {
+    // print_r($object->field_user); //To see vars
+      // Check if node is referenced by logged in user
+      $referenced = false;
+      foreach($object->field_user as $reference) {
+        global $user;
+        if ($user->uid == $reference['uid'])
+	        $referenced = true;
+      }
+
+      // If the ....
+      if ($referenced == true) {
+        // set the node permissions to allow editing by this user...
+        print_r("You are allowed to edit this node");
+      }
+
+      if ((node_access('update', $object)) || $referenced == true) { //modified this
         $links['node-edit'] = array(
           'title' => t('Edit'),
           'href' => "node/{$object->nid}/edit",
