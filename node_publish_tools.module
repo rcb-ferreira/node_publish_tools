@@ -37,6 +37,23 @@ function node_publish_tools_theme($cache, $type, $theme, $path) {
 }
 
 /**
+ * Function to calculate access to menu
+ *
+ * @return boolean
+ *  True if valid
+ */
+function _node_publish_tools_access($nid) {
+  global $user;
+  $node = node_load($nid);
+  return $user && $user->uid &&
+  (
+    // The user is not blocked and logged in at least once.
+    ($user->access && $user->status && ((user_access('allow referenced access') && $node->uid == $user->uid) || user_access('administer access to node publish tool')))
+  );
+	return TRUE;
+}
+
+/**
  * Retrieve the admin links for a given object.
  */
 function node_publish_tools_get_links($type, $object) {
