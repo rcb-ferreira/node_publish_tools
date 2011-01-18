@@ -1,6 +1,6 @@
 ; $Id$
 name = "Node Publish Tools"
 description = "This module gives the user the ability to edit or delete node"
-version = "v.1"
+version = "6.x-1.x-dev"
 package = "NoJoShmo - Custom Modules"
 core = 6.x
