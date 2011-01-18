@@ -92,42 +92,61 @@ function node_publish_tools_get_links($type, $object) {
  * Implementation of hook_admin_link() on behalf of the node module.
  */
 function node_admin_link($type, $object ) {
+	global $user;
 	$links = array();
-	print_r($object->view);
+	print_r($object->user);
 	if ($type == 'node') {
     if (!function_exists('node_preview')) {
+			// get all types that allows reference access
 			$types = variable_get('shared_permission_types', null);
+
+			// do if a referenced content type as per settings form
 			if (in_array($object->type, $types)) {
-				$reference_field = '';
+				// find field with referenced user
+				$reference_field = ' ';
 				$type_info = content_types($object->type);
 				foreach($type_info['fields'] as $field) {
 					if ($field['type'] == 'userreference') {
 						$reference_field = $field['field_name'];
 					}
 				}
+				
+				// save referenced user uid
 				$node = (array)$object;
-				$uid = $node[$reference_field][0]['uid'];
-				global $user;
-				if ($user->uid == $uid || $user->uid == $object->uid) {
-					print $user->uid.' : '.$uid;
-						if (node_access('update', $object)) { //modified this
-						$links['node-edit'] = array(
-						'title' => t('Edit'),
-						'href' => "node/{$object->nid}/edit",
+				$referenced_uid = $node[$reference_field][0]['uid'];
+				
+				print_r($node[$reference_field][0]['uid']);
+				
+				// if node owner or referenced user
+				if (($user->uid == $referenced_uid && user_access('allow referenced access', user_load($referenced_uid))/**/) || ($user->uid == $object->uid && node_access('update', $object) && node_access('delete', $object))) {
+					
+					$links['node-publish'] = array(
+						'title' => t('Publish'),
+						'href' => "reference-user-action/{$object->nid}/publish",
 						'attributes' => array('class' => 'icon-edit'),
 						'query' => array('destination' => $_GET['q']),
-						);
-						}
-						// if (node_access('delete', $object)) {
-						if ((node_access('delete', $object))) {
-						$links['node-delete'] = array(
+					);
+					
+					$links['node-edit'] = array(
+						'title' => t('Edit'),
+						'href' => "reference-user-action/{$object->nid}/edit",
+						'attributes' => array('class' => 'icon-edit'),
+						'query' => array('destination' => $_GET['q']),
+					);
+
+					$links['node-delete'] = array(
 						'title' => t('Delete'),
-						'href' => "node/{$object->nid}/delete",
+						'href' => "reference-user-action/{$object->nid}/delete",
 						'attributes' => array('class' => 'icon-delete'),
 						'query' => array('destination' => $_GET['q']),
-						);
-					}
-				}
+					);
+					if ($user->uid == $referenced_uid)
+						drupal_set_message('Can edit as Referenced user');
+					else
+						drupal_set_message('Can edit as node owner');
+				} else
+					drupal_set_message('Sorry, can\'t edit');
+				
 			}
 			/*$form = array();
 			// get all content types
