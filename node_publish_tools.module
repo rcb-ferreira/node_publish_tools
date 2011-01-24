@@ -5,6 +5,20 @@
  * 	Ads some node addons like the ability for referenced user to have same permission over nodes as creators
  */
 
+ /**
+ * Implementation of hook_init().
+ */
+function contextual_init() {
+  // Don't do anything if the user has no access.
+  if (!user_access('administer access to node publish tool')) {
+    return;
+  }
+
+   $path = drupal_get_path('module', 'node_publish_tools');
+   drupal_add_css($path .'/node_publish_tools.css');
+
+}
+
 /**
  * Implementation of hook_help()
  */
@@ -56,7 +70,53 @@ function node_publish_tools_menu() {
     'access arguments' => array(1),
     'type' => MENU_CALLBACK,
   );
+	
+	$items['node/%/publish'] = array(
+		'title' => 'Node published',
+		'page callback' => 'node_publish_tools_publish',
+		'page arguments' => array(1),
+		'access arguments' => array('administer access to node publish tool'),
+		'type' => MENU_CALLBACK,
+	);
   return $items;
+}
+
+function node_publish_tools_publish($nid) {
+	if (is_numeric($nid)) {
+		db_query("UPDATE {node} SET status = 0 WHERE nid = %d", $nid);
+	}
+	if (isset($_REQUEST['destination'])) {
+		drupal_goto($_REQUEST['destination']);
+	}
+	else {
+		drupal_goto('node/'. $nid);
+	}
+}
+
+function node_publish_tools_form_alter(&$form, $form_state, $form_id) {
+
+	global $user;
+		global $base_url;
+		if (strstr($form_id, '_node_form') && $form['nid']['#value'] != '' && $form['options']['status']['#default_value'] == 0) {
+			if (user_access('administer access to node publish tool')) {
+			$links = array(
+			'#type' => 'button',
+			'#value' => 'Publish',
+			'#submit' => FALSE,
+			'#attributes' => array(
+			'onclick' => 'return false;',
+			'style' => 'display:none;',
+			),
+			);
+			drupal_add_js('$(document).ready(function() {
+			$("#edit-publish").show();
+			$("#edit-publish").click(function() {
+			window.location = "'. $base_url .'/node/'. arg(1) .'/publish";
+			return false;
+			});
+			});', 'inline', 'footer');
+			}
+		}
 }
 
 /**
@@ -115,28 +175,28 @@ function node_admin_link($type, $object ) {
 				$node = (array)$object;
 				$referenced_uid = $node[$reference_field][0]['uid'];
 				
-				print_r($node[$reference_field][0]['uid']);
+				//print_r($node[$reference_field][0]['uid']);
 				
 				// if node owner or referenced user
 				if (($user->uid == $referenced_uid && user_access('allow referenced access', user_load($referenced_uid))/**/) || ($user->uid == $object->uid && node_access('update', $object) && node_access('delete', $object))) {
 					
-					$links['node-publish'] = array(
-						'title' => t('Publish'),
-						'href' => "reference-user-action/{$object->nid}/publish",
-						'attributes' => array('class' => 'icon-edit'),
-						'query' => array('destination' => $_GET['q']),
-					);
+					// $links['node-publish'] = array(
+						// 'title' => t('Publish'),
+						// 'href' => "node/{$object->nid}/publish",
+						// 'attributes' => array('class' => 'icon-unpublish'),
+						// 'query' => array('destination' => $_GET['q']),
+					// );
 					
 					$links['node-edit'] = array(
 						'title' => t('Edit'),
-						'href' => "reference-user-action/{$object->nid}/edit",
+						'href' => "node/{$object->nid}/edit",
 						'attributes' => array('class' => 'icon-edit'),
 						'query' => array('destination' => $_GET['q']),
 					);
 
 					$links['node-delete'] = array(
 						'title' => t('Delete'),
-						'href' => "reference-user-action/{$object->nid}/delete",
+						'href' => "node/{$object->nid}/delete",
 						'attributes' => array('class' => 'icon-delete'),
 						'query' => array('destination' => $_GET['q']),
 					);
