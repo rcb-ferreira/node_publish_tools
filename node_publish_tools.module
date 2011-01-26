@@ -8,7 +8,7 @@
  /**
  * Implementation of hook_init().
  */
-function contextual_init() {
+function node_publish_tools_init() {
   // Don't do anything if the user has no access.
   if (!user_access('administer access to node publish tool')) {
     return;
@@ -149,18 +149,18 @@ function node_publish_tools_get_links($type, $object) {
 }
 
 /**
- * Implementation of hook_admin_link() on behalf of the node module.
+ * Implementation of hook_link() on behalf of the node module.
  */
-function node_admin_link($type, $object ) {
+function node_publish_tools_link($type, $object ) {
 	global $user;
 	$links = array();
 	print_r($object->user);
 	if ($type == 'node') {
     if (!function_exists('node_preview')) {
 			// get all types that allows reference access
-			$types = variable_get('shared_permission_types', null);
-
+			$types = variable_get('node_publish_tools_types', null);
 			// do if a referenced content type as per settings form
+			if ($types != null)
 			if (in_array($object->type, $types)) {
 				// find field with referenced user
 				$reference_field = ' ';
@@ -188,10 +188,11 @@ function node_admin_link($type, $object ) {
 					// );
 					
 					$links['node-edit'] = array(
-						'title' => t('Edit'),
+						'title' => t('Ed<b>it</b>'),
 						'href' => "node/{$object->nid}/edit",
-						'attributes' => array('class' => 'icon-edit'),
 						'query' => array('destination' => $_GET['q']),
+						'attributes' => array('class' => 'icon-edit'),
+						'html' => true
 					);
 
 					$links['node-delete'] = array(

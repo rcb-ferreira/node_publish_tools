@@ -28,13 +28,23 @@ function node_publish_tools_settings_form() {
 				$reference_types[$key] = $type;
 		}
 	}
-	
+	// user reference types
+	if (count($reference_types) > 0)
 	$form['shared_permission_types'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('Content-type for Node Publish Tools'),
+    '#title' => t('Content-type for Shared User reference'),
     '#default_value' => variable_get('shared_permission_types', null),
     '#options' => $reference_types,
     '#description' => t('Content type to be used for the node publish tools'),
+  );
+	
+	// publish tools types
+	$form['node_publish_tools_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Content-type for Node Publish Tools'),
+    '#default_value' => variable_get('node_publish_tools_types', null),
+    '#options' => $types,
+    '#description' => t('Content types to add node publish functionality to.'),
   );
 	return system_settings_form($form);
 }
