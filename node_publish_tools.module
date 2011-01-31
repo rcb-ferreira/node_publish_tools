@@ -174,13 +174,13 @@ global $user;
 						
 						$image_publish = '';
 				  if ($object->status == 1){
-						$image_publish = theme_image($path.'/icons/publish.png');
+						$image_publish = theme_image($path.'/publish.png');
 					}else{
-						$image_publish = theme_image($path.'/icons/unpublish.png');
+						$image_publish = theme_image($path.'/unpublish.png');
 					}
 						
-						$image_publish = theme_image($path.'/icons/publish.png');
-						$links['node-unpublish'] = array(
+					$image_publish = theme_image($path.'/publish.png');
+					$links['node-unpublish'] = array(
 						'title' => $image_publish,
 						'href' => "node/{$object->nid}/publish",
 						'attributes' => array('class' => 'icon-unpublish'),
@@ -188,7 +188,7 @@ global $user;
 						'html' => true,
 					);	
 					
-					$image_edit = theme_image($path.'/icons/edit.png'); 				 				 
+					$image_edit = theme_image($path.'/edit.png'); 				 				 
 					$links['node-edit'] = array(
 						'title' => $image_edit,
 						'href' => "node/{$object->nid}/edit",
@@ -201,9 +201,9 @@ global $user;
 						drupal_set_message('Can edit as node owner');
 					$image_publish = '';
 				  if ($object->status == 1){
-						$image_publish = theme_image($path.'/icons/publish.png');
+						$image_publish = theme_image($path.'/publish.png');
 					}else{
-						$image_publish = theme_image($path.'/icons/unpublish.png');
+						$image_publish = theme_image($path.'/unpublish.png');
 					}			
 										
 						$links['node-unpublish'] = array(
@@ -214,7 +214,7 @@ global $user;
 						'html' => true,
 					);										 
 					 				 				 
-					$image_edit = theme_image($path.'/icons/edit.png'); 				 				 
+					$image_edit = theme_image($path.'/edit.png'); 				 				 
 					$links['node-edit'] = array(
 						'title' => $image_edit,
 						'href' => "node/{$object->nid}/edit",
@@ -224,7 +224,7 @@ global $user;
 						'html' => true,
 					);
           				  		
-					$image_delete = theme_image($path.'/icons/delete.png'); 
+					$image_delete = theme_image($path.'/delete.png'); 
 					$links['node-delete'] = array(
 						'title' => $image_delete,
 						'href' => "node/{$object->nid}/delete",
