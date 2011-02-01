@@ -15,9 +15,11 @@ function node_publish_tools_settings_form() {
   $form = array();
   // get all content types
 	$types = array();
-  foreach (node_get_types('types') as  $type) {
+  
+	foreach (node_get_types('types') as  $type) {
     $types[$type->type] = $type->name;
   }
+	
 	// get all types that has user reference fields
 	$reference_types = array();
 	foreach ($types as $key => $type) {
@@ -28,6 +30,7 @@ function node_publish_tools_settings_form() {
 				$reference_types[$key] = $type;
 		}
 	}
+	
 	
 	$form['shared_permission_types'] = array(
     '#type' => 'checkboxes',

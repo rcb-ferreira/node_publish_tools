@@ -4,6 +4,8 @@ Referenced User Node permission
 -------------------------------
 Allow's user referenced in nodes via the CCK User reference field to have the same permission over the node as the node creator
 
+Please choose the correct permission, you won't have access to node publish tools if you don't choose correct permissions.
+
 Quick Links
 -----------
 Allow admin links on nodes for easy access
