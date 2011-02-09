@@ -12,14 +12,15 @@
 		display: block;
 	}
 
-.node-edit{
+.node-delete{
 	right: 5em;
 }
 
-.node-unpublish{
+.node-edit{
 	right: 3em;
 }
 
-.node-delete{
+.node-unpublish{
 	right: 1em;
 }
+

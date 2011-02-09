@@ -23,7 +23,7 @@ function node_publish_tools_help($path, $args) {
  * Implementation of hook_perm()
  */
 function node_publish_tools_perm(){
-	return array('allow referenced access', 'see node publish links', 'administer access to node publish tool');
+	return array('allow referenced access', 'administer access to node publish tool');
 }
 /**
  * Implementation of hook_menu()
@@ -53,10 +53,25 @@ function node_publish_tools_menu() {
 		'access arguments' => array('administer access to node publish tool'),
 		'type' => MENU_CALLBACK,
 	);
+	
+	/*$items['node/%/publish'] = array(
+		'title' => 'Node published',
+		'page callback' => 'node_publish_tools_ajax',
+		'page arguments' => array(1),
+		'access arguments' => array('administer access to node publish tool'),
+		'type' => MENU_CALLBACK,
+	);*/
   return $items;
 }
 
+/*function node_publish_tools_ajax(){
+	$path = node_publish_tools($nid);	
+	$page_content = theme('node_publish_tools', $path);	
+}*/
 
+/**
+ * Implementation of hook_publish
+ */
 function node_publish_tools_publish($nid) {	
 	$node = node_load($nid);	
 	
@@ -82,8 +97,9 @@ function node_publish_tools_publish($nid) {
 	
 }
 
-
-
+/**
+ * Implementation of hook_form_alter
+ */
 function node_publish_tools_form_alter(&$form, $form_state, $form_id) {
 
 	global $user;
@@ -112,12 +128,42 @@ function node_publish_tools_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
+<<<<<<< HEAD
+=======
+ * Implementation of hook_theme().
+ */
+function node_publish_tools_theme($cache, $type, $theme, $path) {
+  $path = drupal_get_path('module', 'node_publish_tools');
+  $items['node_publish_tools'] = array(
+    'arguments' => array('links' => array()),
+    'template' => 'admin-links',
+    'path' => $path,
+    'file' => 'theme.inc',
+  );
+  return $items;
+}
+
+/**
+ * Retrieve the admin links for a given object.
+ */
+function node_publish_tools_get_links($type, $object) {
+  $links = array();
+  if (user_access('administer access to node publish tool')) {
+    $links = module_invoke_all('admin_link', $type, $object);
+    drupal_alter('admin_link', $links, $type, $object);
+  }	
+  return $links;
+}
+
+/**
+>>>>>>> aa9176aa7a72743fe4bcce64349f5b7b948cf49a
  * Implementation of hook_link() on behalf of the node module.
  */
 function node_publish_tools_link($type, $object) {
 global $user;
  	$links = array();
 	
+<<<<<<< HEAD
 		if ($type == 'node') {
 			if (!function_exists('node_preview')) {
 				// get all types that allows reference access
@@ -128,6 +174,51 @@ global $user;
 			if ($type != null){
 				if (in_array($object->type, $types)) {
 						// find field with referenced user
+=======
+	if ($type == 'node') {
+    if (!function_exists('node_preview')) {
+			// get all types that allows reference access
+			$types = variable_get('shared_permission_types', null);
+			// do if a referenced content type as per settings form
+			if ($types != null)
+				if (in_array($object->type, $types)) {
+					// find field with referenced user
+					$reference_field = ' ';
+					$type_info = content_types($object->type);
+					foreach($type_info['fields'] as $field) {
+						if ($field['type'] == 'userreference') {
+							$reference_field = $field['field_name'];
+						}
+					}
+				}
+			
+				// save referenced user uid
+				$node = (array)$object;
+					$referenced_uid = $node[$reference_field][0]['uid'];
+				
+				// if node owner or referenced user
+			if (($user->uid == $referenced_uid && user_access('allow referenced access', user_load($referenced_uid))/**/) || ($user->uid == $object->uid && node_access('update', $object) && node_access('delete', $object))) {
+				// get path to image
+				$path = drupal_get_path('module', 'node_publish_tools');
+				if ($user->uid == $referenced_uid){				
+						drupal_set_message('Can edit as Referenced user');
+						
+						$image_publish = '';
+				  if ($object->status == 1){
+						$image_publish = theme_image($path.'/publish.png');
+					}else{
+						$image_publish = theme_image($path.'/unpublish.png');
+					}
+						
+					$image_publish = theme_image($path.'/publish.png');
+					$links['node-unpublish'] = array(
+						'title' => $image_publish,
+						'href' => "node/{$object->nid}/publish",
+						'attributes' => array('class' => 'icon-unpublish'),
+						'query' => array('destination' => $_GET['q']),
+						'html' => true,
+					);	
+>>>>>>> aa9176aa7a72743fe4bcce64349f5b7b948cf49a
 					
 						$reference_field = ' ';
 						$type_info = content_types($object->type);
@@ -212,6 +303,7 @@ global $user;
 						}
 						
 					}else{
+<<<<<<< HEAD
 							drupal_set_message('Sorry, can\'t edit');
 							}	
 				}
@@ -219,4 +311,73 @@ global $user;
 	  }		
 	}
 	return $links; 
+=======
+					
+						drupal_set_message('Can edit as node owner');
+					//check publish status of node, then add the relevant image to the status
+					$image_publish = '';
+				  if ($object->status == 1){
+						$image_publish = theme_image($path.'/publish.png');
+					}else{
+						$image_publish = theme_image($path.'/unpublish.png');
+					}			
+										
+						$links['node-unpublish'] = array(
+						'title' => $image_publish,						
+						'href' => "node/{$object->nid}/publish",						
+						'attributes' => array('class' => 'admin-links', ),
+						'query' => array('destination' => $_GET['q']),
+						'html' => true,
+					);										 
+					 				 				 
+					$image_edit = theme_image($path.'/edit.png'); 				 				 
+					$links['node-edit'] = array(
+						'title' => $image_edit,
+						'href' => "node/{$object->nid}/edit",
+						'attributes' => array('class' => 'admin-links'),
+						'html' => TRUE,
+						'query' => array('destination' => $_GET['q']),
+						'html' => true,
+					);
+          				  		
+					$image_delete = theme_image($path.'/delete.png'); 
+					$links['node-delete'] = array(
+						'title' => $image_delete,
+						'href' => "node/{$object->nid}/delete",
+						'attributes' => array('class' => 'admin-links'),
+						'query' => array('destination' => $_GET['q']),
+						'html' => true,
+					);				
+				}
+				
+			}else{
+					drupal_set_message('Sorry, can\'t edit');
+				}	
+   		}
+	  }    	 
+   return $links;
+}
+
+
+/**
+ * Implementation of hook_theme_registry_alter().
+ */
+function node_publish_tools_theme_registry_alter(&$theme_registry) {
+  $hooks = array(
+    
+    'node',
+  );
+  foreach ($hooks as $hook) {
+    if (empty($theme_registry[$hook]['preprocess functions']) || !in_array('node_publish_tools_preprocess_'. $hook, $theme_registry[$hook]['preprocess functions'])) {
+      $theme_registry[$hook]['preprocess functions'][] = 'node_publish_tools_preprocess_'. $hook;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_preprocess_node().
+ */
+function node_publish_tools_preprocess_node(&$vars) {
+  $vars['content'] .= theme('node_publish_tools', node_publish_tools_get_links('node', $vars['node']));
+>>>>>>> aa9176aa7a72743fe4bcce64349f5b7b948cf49a
 }
