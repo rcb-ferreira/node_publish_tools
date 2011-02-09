@@ -31,15 +31,8 @@ function node_publish_tools_settings_form() {
 		}
 	}
 	
-	
-<<<<<<< HEAD
-	//$form['reset']['#value'] = l(t('Reset'), 'media/photos');
-	
-	
 	$var_get = variable_get('shared_permission_types', array());
-	
-=======
->>>>>>> aa9176aa7a72743fe4bcce64349f5b7b948cf49a
+
 	$form['shared_permission_types'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Content-type for Node Publish Tools'),

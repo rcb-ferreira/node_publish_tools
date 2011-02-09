@@ -22,8 +22,8 @@ function node_publish_tools_help($path, $args) {
 /**
  * Implementation of hook_perm()
  */
-function node_publish_tools_perm(){
-	return array('allow referenced access', 'see node publish links', 'administer access to node publish tool');
+function node_publish_tools_perm() {
+	return array('allow referenced access',  'administer access to node publish tool');
 }
 /**
  * Implementation of hook_menu()
@@ -37,27 +37,28 @@ function node_publish_tools_menu() {
     'access arguments' => array('administer access to node publish tool'),
     'file' => 'node_publish_tools.admin.inc',
   );
-  $items['node/%/node_publish_tools/%'] = array(
-    'title' => 'Node Publish Tools',
-    'page callback' => 'node_publish_tools_access',
-    'page arguments' => array(1,3),
-    'access callback' => '_node_publish_tools_access',
+  $items['node/%node/node-publish-tools/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('node_publish_tools_delete_node', 1),
+    'access callback' => 'node_publish_tools_access',
     'access arguments' => array(1),
     'type' => MENU_CALLBACK,
   );
 	
-	$items['node/%/publish'] = array(
+	/*$items['node/%/publish'] = array(
 		'title' => 'Node published',
 		'page callback' => 'node_publish_tools_publish',
 		'page arguments' => array(1),
 		'access arguments' => array('administer access to node publish tool'),
 		'type' => MENU_CALLBACK,
-	);
+	);/**/
   return $items;
 }
 
 
 function node_publish_tools_publish($nid) {	
+	// print_r($nid);
 	$node = node_load($nid);	
 	
   if (is_numeric($nid)) {	
@@ -112,85 +113,94 @@ function node_publish_tools_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
+ *	Function to determine if the user is a referenced user of a given node
+ *
+ *	@param $user (Object)
+ *		User to check
+ *
+ *	@param $node (Object)
+ *		Node that contains referenced field
+ *
+ *	@return TRUE if user is referenced in the node
+ */
+function _node_publish_tools_is_referenced($user, $node) {
+	// find field with referenced user
+	$reference_field = ' ';
+	$type_info = content_types($node->type);
+	foreach($type_info['fields'] as $field) {
+		if ($field['type'] == 'userreference') {
+			$reference_field = $field['field_name'];
+		}
+	}
+	// save referenced user uid
+	$node = (array)$node;
+	$referenced_uid = $node[$reference_field][0]['uid'];
+	// if node owner or referenced user
+	if ($user->uid == $referenced_uid && user_access('allow referenced access', user_load($referenced_uid)))
+		return true;
+	return false;
+}
+
+/**
+ *	Function to determine if the user is the owner of a node
+ *
+ *	@param $user (Object)
+ *		User to check
+ *
+ *	@param $node (Object)
+ *		Node to use for user check
+ *
+ *	@return TRUE if user owns the node
+ */
+function _node_publish_tools_is_owner($user, $node) {
+	if ($user->uid == $node->uid && node_access('delete', $node))
+		return true;
+	return false;
+}
+
+function node_publish_tools_access($node) {
+	global $user;
+	return _node_publish_tools_is_referenced($user, $node) || _node_publish_tools_is_owner($user, $node) || user_access('administer access to node publish tool');
+}
+
+/**
  * Implementation of hook_link() on behalf of the node module.
  */
 function node_publish_tools_link($type, $object) {
-global $user;
+	global $user;
  	$links = array();
-	
-		if ($type == 'node') {
-			if (!function_exists('node_preview')) {
-				// get all types that allows reference access
-				
-				 $types = variable_get('shared_permission_types', array());
-
-				// do if a referenced content type as per settings form
+	if ($type == 'node') {
+		if (!function_exists('node_preview')) {
+			// get all types that allows reference access				
+			$types = variable_get('shared_permission_types', array());
+       
+			drupal_set_message('Referenced: '._node_publish_tools_is_referenced($user, $object));
+			drupal_set_message('Owner: '._node_publish_tools_is_owner($user, $object));
+		  drupal_set_message('Admin: '.user_access('administer access to node publish tool'));
+			 
+			// do if a referenced content type as per settings form
 			if ($type != null){
 				if (in_array($object->type, $types)) {
-						// find field with referenced user
-					
-						$reference_field = ' ';
-						$type_info = content_types($object->type);
-						foreach($type_info['fields'] as $field) {
-							if ($field['type'] == 'userreference') {
-								$reference_field = $field['field_name'];
-							}
-						}
-					
-								
-						// save referenced user uid
-						$node = (array)$object;
-							$referenced_uid = $node[$reference_field][0]['uid'];
-						
-						// if node owner or referenced user
-						if (($user->uid == $referenced_uid && user_access('allow referenced access', user_load($referenced_uid))/**/) || ($user->uid == $object->uid && node_access('update', $object) && node_access('delete', $object))) {
+					// if node owner or referenced user
+					if (_node_publish_tools_is_referenced($user, $object) || _node_publish_tools_is_owner($user, $object) || user_access('administer access to node publish tool')) {
 						// get path to image
 						$path = drupal_get_path('module', 'node_publish_tools');
-						if ($user->uid == $referenced_uid){				
-								drupal_set_message('Can edit as Referenced user');
-								
-								$image_publish = '';
-							if ($object->status == 1){
-								$image_publish = theme_image($path.'/icons/publish.png');
-							}else{
-								$image_publish = theme_image($path.'/icons/unpublish.png');
-							}
-								
-								$image_publish = theme_image($path.'/icons/publish.png');
-								$links['node-unpublish'] = array(
-								'title' => $image_publish,
-								'href' => "node/{$object->nid}/publish",
-								'attributes' => array('class' => 'node-publish-tools-links'),
-								'query' => array('destination' => $_GET['q']),
-								'html' => true,
-							);	
 							
-							$image_edit = theme_image($path.'/icons/edit.png'); 				 				 
-							$links['node-edit'] = array(
-								'title' => $image_edit,
-								'href' => "node/{$object->nid}/edit",
-								'attributes' => array('class' => 'icon-edit'),
-								'query' => array('destination' => $_GET['q']),
-								'html' => true,
-							);
-							
-							}else{
-								drupal_set_message('Can edit as node owner');
-							$image_publish = '';
-							if ($object->status == 1){
-								$image_publish = theme_image($path.'/icons/publish.png');
-							}else{
-								$image_publish = theme_image($path.'/icons/unpublish.png');
-							}			
-												
-								$links['node-unpublish'] = array(
-								'title' => $image_publish,						
-								'href' => "node/{$object->nid}/publish",						
-								// 'attributes' => array('class' => 'node-publish-tools-links', ),
-								'query' => array('destination' => $_GET['q']),
-								'html' => true,
-							);										 
-															 
+						/*$image_publish = '';
+						if ($object->status == 1) {
+							$image_publish = theme_image($path.'/icons/publish.png');
+						} else {
+							$image_publish = theme_image($path.'/icons/unpublish.png');
+						}			
+						$links['node-unpublish'] = array(
+							'title' => $image_publish,						
+							'href' => "node/{$object->nid}/publish",						
+							// 'attributes' => array('class' => 'node-publish-tools-links', ),
+							'query' => array('destination' => $_GET['q']),
+							'html' => true,
+						);/**/						 
+
+						if (node_access('update', $object)) {
 							$image_edit = theme_image($path.'/icons/edit.png'); 				 				 
 							$links['node-edit'] = array(
 								'title' => $image_edit,
@@ -200,23 +210,39 @@ global $user;
 								'query' => array('destination' => $_GET['q']),
 								'html' => true,
 							);
-														
-							$image_delete = theme_image($path.'/icons/delete.png'); 
-							$links['node-delete'] = array(
-								'title' => $image_delete,
-								'href' => "node/{$object->nid}/delete",
-								// 'attributes' => array('class' => 'node-publish-tools-links'),
-								'query' => array('destination' => $_GET['q']),
-								'html' => true,
-							);				
 						}
 						
-					}else{
-							drupal_set_message('Sorry, can\'t edit');
-							}	
+						$image_delete = theme_image($path.'/icons/delete.png'); 
+						$links['node-delete'] = array(
+							'title' => $image_delete,
+							'href' => 'node/'.$object->nid.'/node-publish-tools/delete',
+							// 'attributes' => array('class' => 'node-publish-tools-links'),
+							// 'query' => array('destination' => $_GET['q']),
+							'html' => true,
+						);
+					} else {
+						// drupal_set_message('Sorry, can\'t edit');
+					}	
 				}
 			}
-	  }		
+	  }
 	}
 	return $links; 
+}
+
+function node_publish_tools_delete_node(&$form_state, $node) {
+	$form = array();
+	$form['nid'] = array(
+		'#type' => 'value',
+		'#value' => $node->nid
+	);
+	return confirm_form($form, t('Are you sure you want to delete this reference?'), isset($_GET['destination']) ? $_GET['destination'] : 'node/'. $node->nid, null, t('Remove reference'), t('Cancel'));
+}
+
+function node_publish_tools_delete_node_submit($form, &$form_state) {
+	if ($form_state['values']['confirm']) {
+    node_delete($form_state['values']['nid']);
+  }
+  $form_state['redirect'] = '<front>';
+	// drupal_set_message('Reference was successfully deleted.');
 }
