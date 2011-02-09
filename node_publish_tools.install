@@ -1,0 +1,16 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install().
+ */
+function node_publish_tools_install() {
+  
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function node_publish_tools_uninstall() {
+	variable_del('shared_permission_types');  
+}
