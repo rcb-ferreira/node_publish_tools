@@ -1,50 +1,25 @@
-/**
- * Aggressive resets so we can achieve a consistent look in
- * hostile CSS environments.
- */
-div.admin-links {
-  margin:0px;
-  padding:0px;
-  border:0px;
-  outline:0px;
-  font-size:100%;
-  vertical-align:baseline;
-  line-height:inherit;
-  text-align:left;  
+.node {
+	position: relative;
 }
 
-/**
- * Inline/node publish tools
- */
+.node .node-unpublish, .node .node-edit, .node .node-delete  {
+	position: absolute;
+	top: 0;
+	display: none;
+}
 
-div.node,
-div.view-data-node-body { position:relative; }
+	.node:hover .node-unpublish, .node:hover .node-edit, .node:hover .node-delete  {
+		display: block;
+	}
 
-div.block div.view { position:static; }
+.node-edit{
+	right: 5em;
+}
 
-div.admin-inline { display:none; }
+.node-unpublish{
+	right: 3em;
+}
 
-
-div.admin-links {
-  position:absolute;
-  top:-5px;
-  right:5px;
-  z-index:100;
-  height:25px;
-  line-height:25px;
-  overflow:hidden;
-  }
-
-  
-div.node:hover div.admin-inline { display:block; }
-
-div.admin-links a,
-div.admin-links a:hover {
-  background-color:transparent !important;   
-  text-transform:none !important;
-  font-weight:normal !important;
-  font-style:normal !important;
-  float:left !important;
-  padding:0px 5px 0px 5px;
-  line-height:25px !important;
-  } 
+.node-delete{
+	right: 1em;
+}

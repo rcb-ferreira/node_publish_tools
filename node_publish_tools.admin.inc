@@ -29,12 +29,19 @@ function node_publish_tools_settings_form() {
 		}
 	}
 	
+	
+	//$form['reset']['#value'] = l(t('Reset'), 'media/photos');
+	
+	
+	$var_get = variable_get('shared_permission_types', array());
+	
 	$form['shared_permission_types'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Content-type for Node Publish Tools'),
-    '#default_value' => variable_get('shared_permission_types', null),
+    '#default_value' => $var_get,
     '#options' => $reference_types,
     '#description' => t('Content type to be used for the node publish tools'),
   );
+	
 	return system_settings_form($form);
 }
