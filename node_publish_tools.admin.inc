@@ -32,7 +32,8 @@ function node_publish_tools_settings_form() {
 	}
 	
 	$var_get = variable_get('shared_permission_types', array());
-
+	
+  
 	$form['shared_permission_types'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Content-type for Node Publish Tools'),
@@ -43,3 +44,4 @@ function node_publish_tools_settings_form() {
 	
 	return system_settings_form($form);
 }
+

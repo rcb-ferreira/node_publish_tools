@@ -162,70 +162,61 @@ function node_publish_tools_access($node) {
 	global $user;
 	return _node_publish_tools_is_referenced($user, $node) || _node_publish_tools_is_owner($user, $node) || user_access('administer access to node publish tool');
 }
-
+ 
 /**
  * Implementation of hook_link() on behalf of the node module.
  */
+ 
 function node_publish_tools_link($type, $object) {
 	global $user;
  	$links = array();
 	if ($type == 'node') {
 		if (!function_exists('node_preview')) {
 			// get all types that allows reference access				
-			$types = variable_get('shared_permission_types', array());
-       
+			$types = (array)variable_get('shared_permission_types', array());
+      foreach ($types as $key => $value) {
+				if ($value == null)
+					unset($types[$key]);	
+			}
+			//Test what access the user has
 			drupal_set_message('Referenced: '._node_publish_tools_is_referenced($user, $object));
-			drupal_set_message('Owner: '._node_publish_tools_is_owner($user, $object));
+			drupal_set_message('Owner: '._node_publish_tools_is_owner($user, $object));			
 		  drupal_set_message('Admin: '.user_access('administer access to node publish tool'));
+			//drupal_set_message('Checked Checkbox: '._node_publish_tools_check_checkbox());
 			 
 			// do if a referenced content type as per settings form
-			if ($type != null){
-				if (in_array($object->type, $types)) {
-					// if node owner or referenced user
-					if (_node_publish_tools_is_referenced($user, $object) || _node_publish_tools_is_owner($user, $object) || user_access('administer access to node publish tool')) {
-						// get path to image
-						$path = drupal_get_path('module', 'node_publish_tools');
-							
-						/*$image_publish = '';
-						if ($object->status == 1) {
-							$image_publish = theme_image($path.'/icons/publish.png');
-						} else {
-							$image_publish = theme_image($path.'/icons/unpublish.png');
-						}			
-						$links['node-unpublish'] = array(
-							'title' => $image_publish,						
-							'href' => "node/{$object->nid}/publish",						
-							// 'attributes' => array('class' => 'node-publish-tools-links', ),
+		if (in_array($object->type, $types)) {
+				// print_r($object->type);
+				// if node owner or referenced user
+				if (_node_publish_tools_is_referenced($user, $object) || _node_publish_tools_is_owner($user, $object) || user_access('administer access to node publish tool')) {
+					// get path to image
+					$path = drupal_get_path('module', 'node_publish_tools');			
+				
+					if (node_access('update', $object)) {
+						$image_edit = theme_image($path.'/icons/edit.png'); 				 				 
+						$links['node-edit'] = array(
+						'title' => $image_edit,
+							'href' => "node/{$object->nid}/edit",
+							// 'attributes' => array('class' => 'node-publish-tools-links'),
+							'html' => TRUE,
 							'query' => array('destination' => $_GET['q']),
 							'html' => true,
-						);/**/						 
-
-						if (node_access('update', $object)) {
-							$image_edit = theme_image($path.'/icons/edit.png'); 				 				 
-							$links['node-edit'] = array(
-								'title' => $image_edit,
-								'href' => "node/{$object->nid}/edit",
-								// 'attributes' => array('class' => 'node-publish-tools-links'),
-								'html' => TRUE,
-								'query' => array('destination' => $_GET['q']),
-								'html' => true,
-							);
-						}
-						
-						$image_delete = theme_image($path.'/icons/delete.png'); 
-						$links['node-delete'] = array(
-							'title' => $image_delete,
-							'href' => 'node/'.$object->nid.'/node-publish-tools/delete',
-							// 'attributes' => array('class' => 'node-publish-tools-links'),
-							// 'query' => array('destination' => $_GET['q']),
-							'html' => true,
 						);
-					} else {
-						// drupal_set_message('Sorry, can\'t edit');
-					}	
-				}
+					}
+						
+					$image_delete = theme_image($path.'/icons/delete.png'); 
+					$links['node-delete'] = array(
+						'title' => $image_delete,
+						'href' => 'node/'.$object->nid.'/node-publish-tools/delete',
+						// 'attributes' => array('class' => 'node-publish-tools-links'),
+						// 'query' => array('destination' => $_GET['q']),
+						'html' => true,
+					);
+				} else {
+					// drupal_set_message('Sorry, can\'t edit');
+				}	
 			}
-	  }
+		}
 	}
 	return $links; 
 }
