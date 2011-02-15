@@ -8,19 +8,18 @@
 	display: none;
 }
 
-	.node:hover .node-unpublish, .node:hover .node-edit, .node:hover .node-delete  {
-		display: block;
-	}
+.node:hover .node-unpublish, .node:hover .node-edit, .node:hover .node-delete  {
+	display: block;
+	height:20px;
+	width: 20px;	
+}
 
 .node-delete{
-	right: 5em;
-}
-
-.node-edit{
-	right: 3em;
-}
-
-.node-unpublish{
+	background: transparent url('icons/delete.png') no-repeat;
 	right: 1em;
 }
 
+.node-edit{
+  background: transparent url('icons/edit.png') no-repeat;
+	right: 2em;
+}
