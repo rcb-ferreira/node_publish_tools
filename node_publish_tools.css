@@ -2,24 +2,24 @@
 	position: relative;
 }
 
-.node .node-unpublish, .node .node-edit, .node .node-delete  {
+.node a.node-edit, .node a.node-delete  {
 	position: absolute;
 	top: 0;
 	display: none;
-}
-
-.node:hover .node-unpublish, .node:hover .node-edit, .node:hover .node-delete  {
-	display: block;
 	height:20px;
-	width: 20px;	
+	width: 20px;
 }
 
-.node-delete{
-	background: transparent url('icons/delete.png') no-repeat;
-	right: 1em;
+.node:hover a.node-edit, .node:hover a.node-delete  {
+	display: block;
 }
 
-.node-edit{
-  background: transparent url('icons/edit.png') no-repeat;
-	right: 2em;
+a.node-delete {
+	background: transparent url('icons/delete.png') no-repeat 0px 2px;
+	right: 0;
+}
+
+a.node-edit {
+  background: transparent url('icons/edit.png') no-repeat  0px 2px;
+	right: 1.5em;
 }
