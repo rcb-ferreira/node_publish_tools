@@ -167,7 +167,7 @@ function node_publish_tools_delete_node(&$form_state, $nid) {
 		'#type' => 'value',
 		'#value' => $nid->nid
 	);
-	return confirm_form($form, t('Are you sure you want to delete this reference?'), isset($_GET['destination']) ? $_GET['destination'] : 'node/'. $nid->nid, null, t('Remove reference'), t('Cancel'));
+	return confirm_form($form, t('Are you sure you want to delete?'), isset($_GET['destination']) ? $_GET['destination'] : 'node/'. $nid->nid, null, t('Delete'), t('Cancel'));
 }
 
 /**
